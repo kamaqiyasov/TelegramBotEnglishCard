@@ -6,6 +6,11 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASS: str
     DB_NAME: str
+    TG_TOKEN: str
+
+    @property
+    def TELEGRAM_TOKEN(self):
+        return self.TG_TOKEN
 
     @property
     def DATABASE_URL_psycopg(self):
