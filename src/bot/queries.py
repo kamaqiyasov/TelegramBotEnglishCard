@@ -1,6 +1,6 @@
 import random
 import logging
-from sqlalchemy import func, exc
+from sqlalchemy import func, exc, select
 from src.database.base import Session
 from src.database.models import User, UserWord, Word
 
@@ -36,22 +36,44 @@ def get_word_for_user(user_id, previous_word):
             return {"rus": user_word.word.rus, "eng": user_word.word.eng}
         return False
         
-def get_random_others_word(count, user_id, word):
-    """Получаем рандомные английские слова без учета текущего слова"""
-    with Session() as session:
-        excluded_words = [eng for (eng,) in session.query(Word.eng).filter(Word.rus == word['rus']).all()]
-        word_ids = [id_word for (id_word,) in session.query(UserWord.id_word).filter(UserWord.id_user == user_id).all()]
-        if len(word_ids) <= count:
-            return False
-        other_words = (session.query(Word)
-                 .filter(Word.rus != word['rus'])
-                 .filter(Word.id.in_(word_ids))
-                 .filter(Word.eng.notin_(excluded_words))
-                 .order_by(func.random())
-                 .limit(count)
-                 .all())
-    return [word.eng for word in other_words]
+def get_random_others_word(user_id: int, rus_word: str, count: int = 3) -> list:
+    """Получить случайные слова пользователя, исключая указанное русское слово
 
+    Args:
+    user_id (int): ID пользователя
+    rus_word (str): Русское слово
+    count (int): Количество случайных слов 
+    
+    Returns:
+        list: Список случайных английских слов
+    """
+    try:
+        with Session() as session:    
+            subquery = (select(Word)
+                        .join(UserWord, UserWord.id_word == Word.id)
+                        .where(UserWord.id_user == user_id,
+                               Word.rus != rus_word)
+                        .distinct()
+                        .subquery())
+            
+            stmt = (select(subquery.c.eng)
+                    .order_by(func.random())
+                    .limit(count))
+        
+            random_words = session.execute(stmt).scalars().all()
+
+            if len(random_words) < count:
+                return []
+        
+        return random_words
+    
+    except exc.SQLAlchemyError as e:
+        logger.error(f"Ошибка базы: {e}")
+        return []
+    except Exception as e:
+        logger.error(f"Ошибка при получении данных get_random_others_word: {e}")
+        return []
+        
 def add_user_word(user_id: int, rus_word: str, eng_word: str) -> tuple[bool, str]:
     """Добавление слова в словарь пользователя
 
@@ -97,11 +119,16 @@ def add_user_word(user_id: int, rus_word: str, eng_word: str) -> tuple[bool, str
                     return True, "Слово добавлено в словарь"
             
             return False, "Слово уже существует в вашем словаре"
+        
     except exc.SQLAlchemyError as e:
         error_msg = f"Ошибка базы данных: {e}"
         logger.error(error_msg)
         session.rollback()
         return False, error_msg
+    except Exception as e:
+        error_msg = f"Ошибка при добавлении слова add_user_word: {e}"
+        logger.error(error_msg)
+        return [False, error_msg]
 
 def _create_new_word(session, rus_word: str, eng_word: str, number: int = 1) -> Word:
     new_word = Word(rus=rus_word, eng=eng_word, number=number)
@@ -145,5 +172,8 @@ def delete_user_word(user_id: int, rus_word: str) -> bool:
         logger.info(f"Удалено {deleted_count} записей. Слово '{rus_word}' для пользователя {user_id}")
         return True
     except exc.SQLAlchemyError as e:
-        logger.error(f"Ошибка в программе: {e}")
+        logger.error(f"Ошибка базы: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"Ошибка в коде delete_user_word: {e}")
         return False
