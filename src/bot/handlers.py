@@ -4,7 +4,7 @@ import random
 from telebot import types
 
 from src.bot.core import bot, MyStates, Command
-from src.bot.queries import get_random_others_word, user_exists, get_random_others_word, add_new_word, get_word_for_user, delete_user_word
+from src.bot.queries import get_random_others_word, user_exists, get_random_others_word, add_user_word, get_word_for_user, delete_user_word
 
 buttons = []
 
@@ -18,7 +18,6 @@ def create_cards(message, user_id, previous_word = None):
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data['user_id'] = user_id
         data['word'] = word
-        print(f"{user_id=} {word=}")
     if not word:
         add_word_btn = types.KeyboardButton(Command.ADD_WORD)
         markup.add(add_word_btn)
@@ -80,7 +79,7 @@ def delete_word(message):
         bot.send_message(message.chat.id, "Пропишите /start для начала работы", reply_markup=types.ReplyKeyboardRemove())
         return False
 
-    delete_user_word(user_id, word)
+    delete_user_word(user_id, word['rus'])
     bot.send_message(message.chat.id, f"Слово \"{word['rus']}\" удалено!")
     create_cards(message, user_id, word)
 
@@ -116,11 +115,13 @@ def handle_wait_translate(message):
     bot.delete_state(message.from_user.id, message.chat.id)
     word = word.strip().replace(" ", "")
     word = word.capitalize() if word else ""
-    new_word = add_new_word(user_id, new_rus_word, word) 
-    if new_word:
-        bot.send_message(message.chat.id, f"Новое слово добавлено {new_rus_word} -> {word}")
+    
+    user_word_success, user_word_message = add_user_word(user_id, new_rus_word, word) 
+    if user_word_success:
+        bot.send_message(message.chat.id, f"{user_word_message}")
     else:
-        bot.send_message(message.chat.id, f"Такое слово уже существует")
+        bot.send_message(message.chat.id, f"{user_word_message}")
+    
     create_cards(message, data['user_id'], data['word'])
 
 @bot.message_handler(state=MyStates.wait_word)
