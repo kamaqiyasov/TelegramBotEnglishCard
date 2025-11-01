@@ -4,7 +4,7 @@ import random
 from telebot import types
 
 from src.bot.core import bot, MyStates, Command
-from src.bot.queries import user_exists, get_random_others_word, add_user_word, get_word_for_user, delete_user_word
+from src.bot.queries import user_exists, get_random_others_word, add_user_word, get_random_word_for_user, delete_user_word
 
 buttons = []
 
@@ -13,7 +13,7 @@ def create_cards(message, user_id, previous_word = None):
     global buttons 
     buttons = []
     markup = types.ReplyKeyboardMarkup(row_width=2)
-    word = get_word_for_user(user_id, previous_word)
+    word = get_random_word_for_user(user_id, previous_word)
     bot.set_state(message.from_user.id, MyStates.target_word, message.chat.id)
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data['user_id'] = user_id
@@ -23,7 +23,9 @@ def create_cards(message, user_id, previous_word = None):
         markup.add(add_word_btn)
         bot.send_message(message.chat.id, "У вас нет больше слов. Добавьте слово", reply_markup=markup)
         return False
+    print(word)
     other_eng_words = get_random_others_word(user_id, word['rus'], 3)
+    print(other_eng_words)
     if not other_eng_words:
         add_word_btn = types.KeyboardButton(Command.ADD_WORD)
         markup.add(add_word_btn)

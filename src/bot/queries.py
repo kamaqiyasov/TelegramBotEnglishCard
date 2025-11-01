@@ -22,20 +22,38 @@ def user_exists(telegram_id, telegram_username):
             return user.id, False
         return user.id, True
 
-def get_word_for_user(user_id, previous_word):
-    """Получаем все слова для конкретного клиента"""
+def get_random_word_for_user(user_id: int, previous__rus_word: str):
+    """Получить случайное слово для пользователя"""
     with Session() as session:
-        if previous_word is None:
-            user_words = session.query(UserWord).filter_by(id_user=user_id).all()            
+        previous__rus_word = 'Мир'
+        if previous__rus_word is None:
+            user_words = get_user_words(session, user_id)
         else:
-            previous_word_ids = [id for (id,) in session.query(Word.id).filter(Word.rus == previous_word['rus']).all()] 
-            user_words = session.query(UserWord).filter(UserWord.id_user == user_id, UserWord.id_word.notin_(previous_word_ids)).all()
-        
-        if user_words:
-            user_word = random.choice(user_words)
-            return {"rus": user_word.word.rus, "eng": user_word.word.eng}
-        return False
-        
+            user_words = get_user_words(session, user_id)
+            for user in  user_words:
+                "ТУТ"
+            # user_words1 = select(user_words)
+            # print(user_words1)
+            # session.execute(user_words1).scalars().all()
+            
+def get_user_words(session, user_id: int) -> UserWord:
+    """Получить все слова пользователя
+
+    Args:
+        session (Session): Текущий session
+        user_id (int): ID пользователя
+
+    Returns:
+        obj: Объект класса UserWord
+    """
+    user_words = (
+        select(Word)
+        .join(UserWord, UserWord.id_word == Word.id)
+        .where(UserWord.id_user == user_id)
+    )
+    
+    return session.scalars(user_words).all()
+
 def get_random_others_word(user_id: int, rus_word: str, count: int = 3) -> list:
     """Получить случайные слова пользователя, исключая указанное русское слово
 
@@ -48,11 +66,14 @@ def get_random_others_word(user_id: int, rus_word: str, count: int = 3) -> list:
         list: Список случайных английских слов
     """
     try:
-        with Session() as session:    
+        with Session() as session:
+            # Исключаем другие переводы для данного русского слова
+            exclude_words = select(Word.eng).where(Word.rus == rus_word).scalar_subquery()
+            
             subquery = (select(Word)
                         .join(UserWord, UserWord.id_word == Word.id)
                         .where(UserWord.id_user == user_id,
-                               Word.rus != rus_word)
+                               ~Word.eng.in_(exclude_words))
                         .distinct()
                         .subquery())
             
