@@ -23,7 +23,6 @@ class UserWord(BaseModel):
     id_user: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     id_word:Mapped[int] = mapped_column(ForeignKey("word.id"), nullable=False)
     learned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    attempt_word: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="userword")
     word: Mapped["Word"] = relationship("Word", back_populates="userword")
