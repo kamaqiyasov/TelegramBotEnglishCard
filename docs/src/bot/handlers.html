@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.bot.handlers API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.bot.handlers</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="src.bot.handlers.add_word"><code class="name flex">
+<span>def <span class="ident">add_word</span></span>(<span>message)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@bot.message_handler(func=lambda message: message.text == Command.ADD_WORD)
+def add_word(message):
+    &#34;&#34;&#34;Обработчик команды добавления нового слова в коллекцию пользователя.&#34;&#34;&#34;
+    try:
+        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+            user_id = data.get(&#39;user_id&#39;, False)
+        
+        if not user_id:
+            logger.warning(f&#34;Пользователь не добавлен&#34;)
+            bot.send_message(message.chat.id, &#34;Пропишите /start для начала работы:&#34;, reply_markup=types.ReplyKeyboardRemove())
+            return
+        
+        # Добавляем кнопку отмена
+        markup = types.ReplyKeyboardMarkup(row_width=2)
+        markup.add(types.KeyboardButton(Command.CANCEL))
+        
+        bot.send_message(message.chat.id, &#34;Напишите какое слово хотите добавить:&#34;, reply_markup=markup)
+        # Ждем слова на русском
+        bot.set_state(message.from_user.id, MyStates.wait_word, message.chat.id)
+        
+    except Exception as e:
+        logger.error(f&#34;Ошибка при add_word: {e}&#34;)
+        bot.send_message(message.chat.id, &#34;Произошла ошибка при добавлении слова&#34;)</code></pre>
+</details>
+<div class="desc"><p>Обработчик команды добавления нового слова в коллекцию пользователя.</p></div>
+</dd>
+<dt id="src.bot.handlers.create_cards"><code class="name flex">
+<span>def <span class="ident">create_cards</span></span>(<span>message, user_id, previous_word='')</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_cards(message, user_id, previous_word = &#34;&#34;):
+    &#34;&#34;&#34;Выводим слово для конкретного клиента&#34;&#34;&#34;
+    try:
+        markup = types.ReplyKeyboardMarkup(row_width=2)
+        # Получаем случайное слово
+        word = get_random_word_for_user(user_id, previous_word)
+        # Устанавливаем состояние 
+        bot.set_state(message.from_user.id, MyStates.target_word, message.chat.id)
+
+        if not word:
+            add_word_btn = types.KeyboardButton(Command.ADD_WORD)
+            markup.add(add_word_btn)
+            bot.send_message(message.chat.id, &#34;У вас нет больше слов. Добавьте слово&#34;, reply_markup=markup)
+            return False
+        
+        # Получаем случайные неправильные варианты
+        other_eng_words = get_random_others_word(user_id, word[&#39;rus&#39;], 3)
+        
+        if not other_eng_words:
+            add_word_btn = types.KeyboardButton(Command.ADD_WORD)
+            markup.add(add_word_btn)
+            bot.send_message(message.chat.id, &#34;У вас мало слов. Добавьте слово&#34;, reply_markup=markup)
+            return False
+        
+        # Формируем кнопки из вариантов ответа
+        answer_options = other_eng_words + [word[&#39;eng&#39;]]
+        answer_buttons = [types.KeyboardButton(str(word_text)) for word_text in answer_options]
+        random.shuffle(answer_buttons)
+        
+        # Формируем кнопки действий
+        add_word_btn = types.KeyboardButton(Command.ADD_WORD)
+        delete_btn = types.KeyboardButton(Command.DELETE_WORD)
+        next_btn = types.KeyboardButton(Command.NEXT)
+        answer_buttons.extend([next_btn, add_word_btn, delete_btn])
+        
+        # Сохраняем данные в состоянии для использования в обработчике
+        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+            data[&#39;buttons&#39;] = answer_buttons
+            data[&#39;user_id&#39;] = user_id
+            data[&#39;word&#39;] = word
+            data[&#39;word&#39;][&#39;attempts&#39;] = 1
+        
+        markup.add(*answer_buttons)
+        # markup.add(next_btn, add_word_btn, delete_btn)
+        
+        bot.send_message(message.chat.id, f&#34;Выбери перевод слова:\n🇷🇺 {word[&#39;rus&#39;]}&#34;, reply_markup=markup)
+        
+    except Exception as e:
+        logger.error(f&#34;Ошибка при выводе слов create_cards: {e}&#34;)
+        bot.send_message(message.chat.id, &#34;Произошла ошибка. Попробуйте позже.&#34;)</code></pre>
+</details>
+<div class="desc"><p>Выводим слово для конкретного клиента</p></div>
+</dd>
+<dt id="src.bot.handlers.delete_word"><code class="name flex">
+<span>def <span class="ident">delete_word</span></span>(<span>message)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@bot.message_handler(func=lambda message: message.text == Command.DELETE_WORD)
+def delete_word(message):
+    &#34;&#34;&#34;Обработчик команды удаления слова из коллекции пользователя&#34;&#34;&#34;
+    try:
+        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+            user_id = data.get(&#39;user_id&#39;, False)
+            word = data.get(&#39;word&#39;, False)
+        
+        if not user_id:
+            logger.warning(f&#34;Пользователь не добавлен&#34;)
+            bot.send_message(message.chat.id, &#34;Пропишите /start для начала работы:&#34;, reply_markup=types.ReplyKeyboardRemove())
+            return
+        
+        if not word.get(&#39;rus&#39;):
+            logger.warning(f&#34;Ошибка при удалении слова. Не получилось взять слово из хранилища&#34;)
+            bot.send_message(message.chat.id, &#34;Не удалось определить слово для удаления&#34;)
+            create_cards(message, user_id)
+            return
+            
+        success = delete_user_word(user_id, word.get(&#39;rus&#39;))
+        if success:
+            response_text = f&#34;Слово \&#34;{word.get(&#39;rus&#39;, &#39;&#39;)}\&#34; удалено!&#34;
+        else:
+            response_text = f&#34;Ошибка при удалении слова \&#34;{word.get(&#39;rus&#39;, &#39;&#39;)}\&#34; &#34;
+
+        bot.send_message(message.chat.id, response_text)    
+        create_cards(message, user_id, word.get(&#39;rus&#39;))
+        
+    except Exception as e:
+        logger.error(f&#34;Ошибка при delete_word: {e}&#34;)
+        bot.send_message(message.chat.id, &#34;Произошла ошибка при удалении карточки&#34;)</code></pre>
+</details>
+<div class="desc"><p>Обработчик команды удаления слова из коллекции пользователя</p></div>
+</dd>
+<dt id="src.bot.handlers.handle_wait_translate"><code class="name flex">
+<span>def <span class="ident">handle_wait_translate</span></span>(<span>message)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@bot.message_handler(state=MyStates.wait_translate)
+def handle_wait_translate(message):
+    &#34;&#34;&#34;Обработчик ввода перевода на английском&#34;&#34;&#34;
+    try:
+        word = message.text
+        
+        if len(word.split()) != 1:
+            bot.send_message(message.chat.id, f&#34;Укажите одно слово&#34;)
+            bot.set_state(message.from_user.id, MyStates.wait_translate, message.chat.id)
+            return
+    
+        if not re.match(r&#39;^[A-Za-z\-]+$&#39;, word):
+            bot.send_message(message.chat.id, f&#34;Укажите слово на английском&#34;)
+            bot.set_state(message.from_user.id, MyStates.wait_translate, message.chat.id)
+            return
+        
+        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+            new_rus_word = data.get(&#39;new_rus_word&#39;)
+            user_id = data.get(&#39;user_id&#39;)
+
+        bot.delete_state(message.from_user.id, message.chat.id)
+        word = word.strip().replace(&#34; &#34;, &#34;&#34;)
+        word = word.capitalize() if word else &#34;&#34;
+        
+        user_word_success, user_word_message = add_user_word(user_id, new_rus_word, word)
+        bot.send_message(message.chat.id, f&#34;{user_word_message}&#34;)
+        if user_word_success:
+            user_words = get_user_words(user_id)
+            count_words_text = f&#34;Сейчас вы изучаете {len(user_words)} слов&#34;
+            bot.send_message(message.chat.id, count_words_text)
+        create_cards(message, data[&#39;user_id&#39;], data[&#39;word&#39;][&#39;rus&#39;])
+        
+    except Exception as e:
+        logger.error(f&#34;Ошибка при add_word: {e}&#34;)
+        bot.send_message(message.chat.id, &#34;Произошла ошибка при добавлении слова&#34;)</code></pre>
+</details>
+<div class="desc"><p>Обработчик ввода перевода на английском</p></div>
+</dd>
+<dt id="src.bot.handlers.handle_wait_word"><code class="name flex">
+<span>def <span class="ident">handle_wait_word</span></span>(<span>message)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@bot.message_handler(state=MyStates.wait_word)
+def handle_wait_word(message):
+    &#34;&#34;&#34;Обработчик ввода слова на русском&#34;&#34;&#34;
+    try:
+        word = message.text.strip()
+        
+        if len(word.split()) != 1:
+            bot.send_message(message.chat.id, f&#34;Укажите одно слово&#34;)
+            bot.set_state(message.from_user.id, MyStates.wait_word, message.chat.id)
+            return
+    
+        if not re.match(r&#39;^[а-яА-ЯёЁ\-]+$&#39;, word):
+            bot.send_message(message.chat.id, f&#34;Укажите слово на русском&#34;)
+            bot.set_state(message.from_user.id, MyStates.wait_word, message.chat.id)
+            return
+
+        word = word.strip().replace(&#34; &#34;, &#34;&#34;)
+        word = word.capitalize() if word else &#34;&#34;
+        
+        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+            data[&#39;new_rus_word&#39;] = word
+
+        bot.send_message(message.chat.id, f&#34;Укажите перевод слова {word}&#34;)
+        bot.set_state(message.from_user.id, MyStates.wait_translate, message.chat.id)
+            
+    except Exception as e:
+        logger.error(f&#34;Ошибка при handle_wait_word: {e}&#34;)
+        bot.send_message(message.chat.id, &#34;Произошла ошибка при обработке русского слова&#34;)</code></pre>
+</details>
+<div class="desc"><p>Обработчик ввода слова на русском</p></div>
+</dd>
+<dt id="src.bot.handlers.message_reply"><code class="name flex">
+<span>def <span class="ident">message_reply</span></span>(<span>message)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@bot.message_handler(func=lambda message: True)
+def message_reply(message):
+    &#34;&#34;&#34;Обработчик основного взаимодействия с пользователем&#34;&#34;&#34;
+    try:
+        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:  
+            user_id = data.get(&#39;user_id&#39;, False)
+            word = data.get(&#39;word&#39;, [])
+            buttons = data.get(&#39;buttons&#39;, [])
+            
+        if not user_id:
+            bot.send_message(message.chat.id, &#34;Для начала работы бота напишите /start&#34;, reply_markup=types.ReplyKeyboardRemove())
+            return 
+        
+        if not word:
+            bot.send_message(message.chat.id, &#34;Сессия завершена. Начните заново /start&#34;)
+            bot.delete_state(message.from_user.id, message.chat.id)
+            return
+        
+        word_attempts = int(word[&#39;attempts&#39;])
+        logger.info(f&#34;Слово {word[&#39;userword_id&#39;]}:{word[&#39;rus&#39;]}, попытка номер {word_attempts}&#34;)
+        text = message.text.replace(&#39;❌&#39;, &#39;&#39;).strip()
+        if text.lower() == word[&#39;eng&#39;].lower():
+            hint = f&#34;Верный ответ!\n {word[&#39;rus&#39;]} -&gt; {word[&#39;eng&#39;]}&#34;
+            bot.send_message(message.chat.id, hint, reply_markup=types.ReplyKeyboardRemove())
+            bot.delete_state(message.from_user.id, message.chat.id)
+            
+            # Если угадывает со 2 попытки, то слово изучено 
+            if word_attempts &lt;= 2:
+                update_word_learned(word.get(&#39;userword_id&#39;), True)
+            
+            create_cards(message, user_id, word[&#39;rus&#39;])
+        else:
+            updated_buttons = []
+            word_attempts += 1
+            for btn in buttons:
+                btn_text = btn.text
+                clean_text = btn_text
+                if btn_text.lower() == text.lower():
+                    updated_buttons.append(types.KeyboardButton(clean_text + &#39; ❌&#39;))
+                else:
+                    updated_buttons.append(types.KeyboardButton(clean_text))
+                
+                # Если угадывает со 2 попытки, то слово не изучено 
+                if word_attempts &gt;= 2:
+                    update_word_learned(word.get(&#39;userword_id&#39;), False)
+                
+            with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+                data[&#39;buttons&#39;] = updated_buttons
+                data[&#39;word&#39;][&#39;attempts&#39;] = word_attempts
+                
+            markup = types.ReplyKeyboardMarkup(row_width=2)
+            markup.add(*updated_buttons)
+
+            hint = f&#34;Допущена ошибка!\n Попробуй ещё раз вспомнить слово 🇷🇺{word[&#39;rus&#39;]}&#34;
+            bot.send_message(message.chat.id, hint, reply_markup=markup)
+            
+    except Exception as e:
+        logger.error(f&#34;Ошибка в message_reply для пользователя {message.from_user.id}: {e}&#34;)
+        bot.send_message(message.chat.id, &#34;Произошла ошибка. Попробуйте снова /start&#34;)</code></pre>
+</details>
+<div class="desc"><p>Обработчик основного взаимодействия с пользователем</p></div>
+</dd>
+<dt id="src.bot.handlers.next_cards"><code class="name flex">
+<span>def <span class="ident">next_cards</span></span>(<span>message)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@bot.message_handler(func=lambda message: message.text == Command.NEXT)
+@bot.message_handler(func=lambda message: message.text == Command.CANCEL)
+def next_cards(message):
+    &#34;&#34;&#34;Обработчик команд &#34;Далее&#34; или &#34;Отмена&#34; &#34;&#34;&#34;
+    try:
+        # Получаем данные пользователя из временного хранилища
+        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+            user_id = data.get(&#39;user_id&#39;, False)
+            previous_word = data.get(&#39;word&#39;, &#39;&#39;)
+        
+        if not user_id:
+            logger.warning(f&#34;Пользователь не добавлен&#34;)
+            bot.send_message(message.chat.id, &#34;Пропишите /start для начала работы:&#34;, reply_markup=types.ReplyKeyboardRemove())
+            return
+        
+        create_cards(message, user_id, previous_word.get(&#39;rus&#39;, &#39;&#39;))
+        
+    except Exception as e:
+        logger.error(f&#34;Ошибка при next_cards: {e}&#34;)
+        bot.send_message(message.chat.id, &#34;Произошла ошибка при загрузке карточек&#34;)</code></pre>
+</details>
+<div class="desc"><p>Обработчик команд "Далее" или "Отмена"</p></div>
+</dd>
+<dt id="src.bot.handlers.start"><code class="name flex">
+<span>def <span class="ident">start</span></span>(<span>message)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@bot.message_handler(commands=[&#39;cards&#39;, &#39;start&#39;])
+def start(message):
+    &#34;&#34;&#34;Обработчик команд /start и /cards для начала работы с ботом.&#34;&#34;&#34;
+    try:
+        # Создаем нового пользователя или находит существующего
+        user_id, user_was_exist = get_or_create_user(message.from_user.id, message.from_user.username)
+
+        if user_id is None:
+            logger.error(f&#34;Пользователь не добавлен&#34;)
+            bot.send_message(message.chat.id, &#34;Произошла ошибка, попробуйте позже&#34;)
+            return
+
+        if user_was_exist:
+            text = f&#34;С возвращением, {message.from_user.first_name}&#34;
+        else:
+            text = textwrap.dedent(
+                &#34;Привет 👋 Давай попрактикуемся в английском языке. Тренировки можешь проходить в удобном для себя темпе.\n&#34;
+                &#34;У тебя есть возможность использовать тренажёр, как конструктор, и собирать свою собственную базу для обучения. Для этого воспользуйся инструментами:\n&#34;
+                &#34;   добавить слово ➕,\n&#34;
+                &#34;   удалить слово 🔙.\n&#34;
+                &#34;Ну что, начнём ⬇️&#34;)
+        
+        bot.send_message(message.chat.id, text)
+        create_cards(message, user_id)
+          
+    except Exception as e:
+        logger.error(f&#34;Ошибка в команде /start: {e}&#34;)
+        bot.send_message(message.chat.id, &#34;Произошла ошибка. Попробуйте позже.&#34;)</code></pre>
+</details>
+<div class="desc"><p>Обработчик команд /start и /cards для начала работы с ботом.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.bot" href="index.html">src.bot</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="src.bot.handlers.add_word" href="#src.bot.handlers.add_word">add_word</a></code></li>
+<li><code><a title="src.bot.handlers.create_cards" href="#src.bot.handlers.create_cards">create_cards</a></code></li>
+<li><code><a title="src.bot.handlers.delete_word" href="#src.bot.handlers.delete_word">delete_word</a></code></li>
+<li><code><a title="src.bot.handlers.handle_wait_translate" href="#src.bot.handlers.handle_wait_translate">handle_wait_translate</a></code></li>
+<li><code><a title="src.bot.handlers.handle_wait_word" href="#src.bot.handlers.handle_wait_word">handle_wait_word</a></code></li>
+<li><code><a title="src.bot.handlers.message_reply" href="#src.bot.handlers.message_reply">message_reply</a></code></li>
+<li><code><a title="src.bot.handlers.next_cards" href="#src.bot.handlers.next_cards">next_cards</a></code></li>
+<li><code><a title="src.bot.handlers.start" href="#src.bot.handlers.start">start</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>
