@@ -28,7 +28,18 @@ cd TelegramBotEnglishCard
 pip install -r requirements.txt
 ```
 
-### Старт
+### Быстрый старт
+
+#### 1. Получите токен бота
+- Напишите [@BotFather](https://t.me/BotFather) в Telegram
+- Команда: `/newbot`
+- Придумайте имя боту
+- Получите токен (выглядит как `123456789:ABCdefGHIjklMnopQRstuVWXyz`)
+
+#### 2. Настройте окружение
+Создайте файл `.env` и заполните его (пример файла .env.example):
+
+#### 3. Запуск бота
 ```
 python -m src.main
 ```
