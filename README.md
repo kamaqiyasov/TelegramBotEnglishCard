@@ -21,6 +21,7 @@
 ```bash
 git clone https://github.com/kamaqiyasov/TelegramBotEnglishCard.git
 cd TelegramBotEnglishCard
+```
 
 ### Установка зависимостей
 ```
