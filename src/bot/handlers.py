@@ -51,7 +51,6 @@ def create_cards(message, user_id, previous_word = ""):
             data['word']['attempts'] = 1
         
         markup.add(*answer_buttons)
-        # markup.add(next_btn, add_word_btn, delete_btn)
         
         bot.send_message(message.chat.id, f"Выбери перевод слова:\n🇷🇺 {word['rus']}", reply_markup=markup)
         
