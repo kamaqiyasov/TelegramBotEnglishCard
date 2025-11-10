@@ -17,13 +17,18 @@ class BaseModel(Base):
     id: Mapped[int] = mapped_column(Identity(), primary_key=True)
 
 def create_tables():
+    from src.database.models import Word
+    
     Base.metadata.create_all(engine)
+
+    with Session() as session:
+        if session.query(Word).count() == 0:
+            add_sample_data(session)
 
 def drop_tables():
     Base.metadata.drop_all(engine)
 
-# Первоначальные данные
-def add_sample_data():
+def add_sample_data(session):
     from src.database.models import Word
     data = [
         {"model": "Word", "fields": {"rus": "Мир", "eng": "Peace", "is_main": True, "number": 1}},
@@ -41,10 +46,9 @@ def add_sample_data():
         {"model": "Word", "fields": {"rus": "Сыр", "eng": "Cheese", "is_main": True}},
     ]
 
-    with Session() as session:
-        for record in data:
-            model = {
-                'Word': Word,
-            }[record.get('model')]
-            session.add(model(id=record.get('pk'), **record.get('fields')))
-            session.commit()
+    for record in data:
+        model = {
+            'Word': Word,
+        }[record.get('model')]
+        session.add(model(id=record.get('pk'), **record.get('fields')))
+        session.commit()
