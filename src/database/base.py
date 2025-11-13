@@ -32,7 +32,6 @@ def add_sample_data(session):
     from src.database.models import Word
     data = [
         {"model": "Word", "fields": {"rus": "Мир", "eng": "Peace", "is_main": True, "number": 1}},
-        {"model": "Word", "fields": {"rus": "Мир", "eng": "World", "is_main": False, "number": 3}},
         {"model": "Word", "fields": {"rus": "Мир", "eng": "Universe", "is_main": True, "number": 2}},
         {"model": "Word", "fields": {"rus": "Покой", "eng": "Peace", "is_main": True}},
         {"model": "Word", "fields": {"rus": "Солнце", "eng": "Sun", "is_main": True}},

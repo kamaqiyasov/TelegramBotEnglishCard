@@ -222,7 +222,6 @@ for example, any mapped columns or relationships.</p></div>
 
     id_user: Mapped[int] = mapped_column(ForeignKey(&#34;user.id&#34;), nullable=False)
     id_word:Mapped[int] = mapped_column(ForeignKey(&#34;word.id&#34;), nullable=False)
-    learned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     user: Mapped[&#34;User&#34;] = relationship(&#34;User&#34;, back_populates=&#34;userword&#34;)
     word: Mapped[&#34;Word&#34;] = relationship(&#34;Word&#34;, back_populates=&#34;userword&#34;)</code></pre>
@@ -292,30 +291,6 @@ for example, any mapped columns or relationships.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="src.database.models.UserWord.id_word"><code class="name">var <span class="ident">id_word</span> : sqlalchemy.orm.base.Mapped[int]</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def __get__(
-    self, instance: Optional[object], owner: Any
-) -&gt; Union[InstrumentedAttribute[_T_co], _T_co]:
-    if instance is None:
-        return self
-
-    dict_ = instance_dict(instance)
-    if self.impl.supports_population and self.key in dict_:
-        return dict_[self.key]  # type: ignore[no-any-return]
-    else:
-        try:
-            state = instance_state(instance)
-        except AttributeError as err:
-            raise orm_exc.UnmappedInstanceError(instance) from err
-        return self.impl.get(state, dict_)  # type: ignore[no-any-return]</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="src.database.models.UserWord.learned"><code class="name">var <span class="ident">learned</span> : sqlalchemy.orm.base.Mapped[bool]</code></dt>
 <dd>
 <details class="source">
 <summary>
@@ -416,7 +391,16 @@ for example, any mapped columns or relationships.</p></div>
     )
 
     def __repr__(self):
-        return f&#34;{self.id}: {self.rus} -&gt; {self.eng} [{self.number}]&#34;</code></pre>
+        return f&#34;{self.id}: {self.rus} -&gt; {self.eng} [{self.number}]&#34;
+    
+    def to_dict(self):
+        return {
+            &#39;id&#39;: self.id,
+            &#39;rus&#39;: self.rus,
+            &#39;eng&#39;: self.eng,
+            &#39;number&#39;: self.number,
+            &#39;is_main&#39;: self.is_main,
+        }</code></pre>
 </details>
 <div class="desc"><p>The base class of the class hierarchy.</p>
 <p>When called, it accepts no arguments and returns a new featureless
@@ -603,6 +587,28 @@ for example, any mapped columns or relationships.</p></div>
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Methods</h3>
+<dl>
+<dt id="src.database.models.Word.to_dict"><code class="name flex">
+<span>def <span class="ident">to_dict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_dict(self):
+    return {
+        &#39;id&#39;: self.id,
+        &#39;rus&#39;: self.rus,
+        &#39;eng&#39;: self.eng,
+        &#39;number&#39;: self.number,
+        &#39;is_main&#39;: self.is_main,
+    }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -631,11 +637,10 @@ for example, any mapped columns or relationships.</p></div>
 </li>
 <li>
 <h4><code><a title="src.database.models.UserWord" href="#src.database.models.UserWord">UserWord</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="src.database.models.UserWord.id" href="#src.database.models.UserWord.id">id</a></code></li>
 <li><code><a title="src.database.models.UserWord.id_user" href="#src.database.models.UserWord.id_user">id_user</a></code></li>
 <li><code><a title="src.database.models.UserWord.id_word" href="#src.database.models.UserWord.id_word">id_word</a></code></li>
-<li><code><a title="src.database.models.UserWord.learned" href="#src.database.models.UserWord.learned">learned</a></code></li>
 <li><code><a title="src.database.models.UserWord.user" href="#src.database.models.UserWord.user">user</a></code></li>
 <li><code><a title="src.database.models.UserWord.word" href="#src.database.models.UserWord.word">word</a></code></li>
 </ul>
@@ -648,6 +653,7 @@ for example, any mapped columns or relationships.</p></div>
 <li><code><a title="src.database.models.Word.is_main" href="#src.database.models.Word.is_main">is_main</a></code></li>
 <li><code><a title="src.database.models.Word.number" href="#src.database.models.Word.number">number</a></code></li>
 <li><code><a title="src.database.models.Word.rus" href="#src.database.models.Word.rus">rus</a></code></li>
+<li><code><a title="src.database.models.Word.to_dict" href="#src.database.models.Word.to_dict">to_dict</a></code></li>
 <li><code><a title="src.database.models.Word.user" href="#src.database.models.Word.user">user</a></code></li>
 <li><code><a title="src.database.models.Word.userword" href="#src.database.models.Word.userword">userword</a></code></li>
 </ul>

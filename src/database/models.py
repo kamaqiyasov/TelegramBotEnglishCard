@@ -22,7 +22,6 @@ class UserWord(BaseModel):
 
     id_user: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     id_word:Mapped[int] = mapped_column(ForeignKey("word.id"), nullable=False)
-    learned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="userword")
     word: Mapped["Word"] = relationship("Word", back_populates="userword")
@@ -46,3 +45,12 @@ class Word(BaseModel):
 
     def __repr__(self):
         return f"{self.id}: {self.rus} -> {self.eng} [{self.number}]"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'rus': self.rus,
+            'eng': self.eng,
+            'number': self.number,
+            'is_main': self.is_main,
+        }

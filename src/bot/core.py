@@ -1,3 +1,4 @@
+import requests
 from telebot import TeleBot, custom_filters
 from telebot.storage import StateMemoryStorage
 from telebot.handler_backends import State, StatesGroup
@@ -18,3 +19,4 @@ class MyStates(StatesGroup):
 state_storage = StateMemoryStorage()
 bot = TeleBot(settings.TELEGRAM_TOKEN, state_storage=state_storage)
 bot.add_custom_filter(custom_filters.StateFilter(bot))
+print("Бот запущен!")

@@ -100,13 +100,8 @@ el.replaceWith(d);
         
     except exc.SQLAlchemyError as e:
         error_msg = f&#34;Ошибка базы данных: {e}&#34;
-        logger.error(error_msg)
         session.rollback()
-        return False, error_msg
-    except Exception as e:
-        error_msg = f&#34;Ошибка при добавлении слова add_user_word: {e}&#34;
-        logger.error(error_msg)
-        return [False, error_msg]</code></pre>
+        return False, error_msg</code></pre>
 </details>
 <div class="desc"><p>Добавление слова в словарь пользователя</p>
 <p>Если слово с русским переводом уже существует, проверяет английский перевод.
@@ -128,74 +123,51 @@ el.replaceWith(d);
 </dl></div>
 </dd>
 <dt id="src.bot.queries.delete_user_word"><code class="name flex">
-<span>def <span class="ident">delete_user_word</span></span>(<span>user_id: int, rus_word: str) ‑> bool</span>
+<span>def <span class="ident">delete_user_word</span></span>(<span>user_id: int, word: dict) ‑> bool</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def delete_user_word(user_id: int, rus_word: str) -&gt; bool:
-    &#34;&#34;&#34;Удаление всех слов из словаря пользователя с указанным русским словом
-
+<pre><code class="python">def delete_user_word(user_id: int, word: dict) -&gt; bool:
+    &#34;&#34;&#34;Удаление слова пользователя
     Args:
         user_id (int): ID пользователя из базы
-        rus_word (str): Русское слово для удаления
+        word (dist): Словарь с информацией о слове
 
     Returns:
         bool: Возвращает True при удалении, иначе False
     &#34;&#34;&#34;
-    logger.info(f&#34;Удаление слова {rus_word}&#34;)
     try:
         with Session() as session:
-            
-            # Находим все id слов с этим русским словом
-            all_word_ids = session.execute(
-                select(Word.id)
-                .where(Word.rus == rus_word)
-                ).scalars().all()
-    
-            # Удаляем связи конкретного пользователя с этими словами из UserWord
-            session.execute(
-                delete(UserWord).where(
-                    and_(UserWord.id_user == user_id,
-                         UserWord.id_word.in_(all_word_ids))))              
-            logger.info(f&#34;Связи пользователя {user_id} со словом {rus_word} удалены&#34;)
-            
-            # Находим неосновные слова для удаления из Word
-            non_main_word = session.execute(
-                select(Word).where(
-                    and_(Word.rus == rus_word,
-                         Word.is_main == False))
-                ).scalars().all()
-            
-            for word in non_main_word:
-                # Проверяем связь слова с другими пользователями 
-                other_connections = session.execute(
-                    select(UserWord).where(UserWord.id_word == word.id).limit(1)
-                    ).first()
 
-                if not other_connections:
-                    session.execute(delete(Word).where(Word.id == word.id))
-                    logger.info(f&#34;Слово {rus_word} пользователя {user_id} удалено&#34;)
+            stmt = select(UserWord).where(
+                UserWord.id_user == user_id,
+                UserWord.id_word == word[&#39;id&#39;]
+            )
+            user_word = session.scalar(stmt)
+            if user_word:
+                session.delete(user_word)
+                word_conn_count = session.scalar(select(func.count(UserWord.id)).where(UserWord.id_word == word[&#39;id&#39;]))
+                if word_conn_count == 0:
+                    session.execute(delete(Word).where(Word.id == word[&#39;id&#39;]))
                 
-            session.commit()
-            return True
+                session.commit()
+                return True
+            else:
+                return False
         
     except exc.SQLAlchemyError as e:
-        logger.error(f&#34;Ошибка базы: {e}&#34;)
-        return False
-    except Exception as e:
-        logger.error(f&#34;Ошибка в коде delete_user_word: {e}&#34;)
         return False</code></pre>
 </details>
-<div class="desc"><p>Удаление всех слов из словаря пользователя с указанным русским словом</p>
+<div class="desc"><p>Удаление слова пользователя</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>user_id</code></strong> :&ensp;<code>int</code></dt>
 <dd>ID пользователя из базы</dd>
-<dt><strong><code>rus_word</code></strong> :&ensp;<code>str</code></dt>
-<dd>Русское слово для удаления</dd>
+<dt><strong><code>word</code></strong> :&ensp;<code>dist</code></dt>
+<dd>Словарь с информацией о слове</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -232,21 +204,9 @@ el.replaceWith(d);
             user = User(telegram_id = telegram_id, telegram_username = telegram_username)
             session.add(user)
             session.commit()
-                    
-            words = session.query(Word).filter(Word.is_main == True).all()        
-            for word in words:
-                user_word = UserWord(id_user=user.id, id_word=word.id)
-                session.add(user_word)
-            
-            session.commit()
-            logger.info(f&#34;Добавлен новый пользователь ID: {user.id}, Telegram_ID: {telegram_id}, Username: {telegram_username}&#34;)
-            
-            return user.id, False
+                        
+        return user.id, False
     except exc.SQLAlchemyError as e:
-        logger.error(f&#34;Ошибка базы: {e}&#34;)
-        return None, False
-    except Exception as e:
-        logger.error(f&#34;Ошибка при получении данных get_random_word_for_user: {e}&#34;)
         return None, False</code></pre>
 </details>
 <div class="desc"><p>Проверка на пользователя</p>
@@ -261,174 +221,80 @@ telegram_username (str): Ник пользователя</p>
 - bool: True если пользователь существовал, False если создан новый</dd>
 </dl></div>
 </dd>
-<dt id="src.bot.queries.get_random_others_word"><code class="name flex">
-<span>def <span class="ident">get_random_others_word</span></span>(<span>user_id: int, rus_word: str, count: int = 3) ‑> list</span>
+<dt id="src.bot.queries.get_random_words"><code class="name flex">
+<span>def <span class="ident">get_random_words</span></span>(<span>user_id: int, previous_word: str, limit: int = 4) ‑> List[Dict] | None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_random_others_word(user_id: int, rus_word: str, count: int = 3) -&gt; list:
-    &#34;&#34;&#34;Получить случайные слова пользователя, исключая указанное русское слово
+<pre><code class="python">def get_random_words(user_id: int, previous_word: str, limit: int = 4) -&gt; Optional[List[Dict]]:
+    &#34;&#34;&#34;Получить рандомно определенное количество слов
 
     Args:
-    user_id (int): ID пользователя
-    rus_word (str): Русское слово
-    count (int): Количество случайных слов 
-    
+        user_id (int): Id пользователя
+        previous_word (str): Предыдущее слово для исключения
+        limit (int): Количество слов для возврата
     Returns:
-        list: Список случайных английских слов
+        List[Dict]: Список слов в виде словарей
     &#34;&#34;&#34;
     try:
         with Session() as session:
-            # Исключаем другие переводы для данного русского слова
-            exclude_words = select(Word.eng).where(Word.rus == rus_word).scalar_subquery()
-            
-            subquery = (select(Word)
-                        .join(UserWord, UserWord.id_word == Word.id)
-                        .where(UserWord.id_user == user_id,
-                               ~Word.eng.in_(exclude_words))
-                        .distinct(Word.eng)
-                        .subquery())
-            
-            stmt = (select(subquery.c.eng)
+            stmt = (select(Word)
+                    .join(UserWord, isouter=True)
+                    .where(Word.rus != previous_word,
+                        or_(UserWord.id_user == user_id, UserWord.id_user.is_(None)),)
                     .order_by(func.random())
-                    .limit(count))
-        
-            random_words = session.execute(stmt).scalars().all()
-
-            if len(random_words) &lt; count:
-                return []
-        
-        return random_words
-    
+                    .limit(limit))
+            
+            words = session.scalars(stmt).all()
+        return [word.to_dict() for word in words] if words else None
     except exc.SQLAlchemyError as e:
-        logger.error(f&#34;Ошибка базы: {e}&#34;)
-        return []
-    except Exception as e:
-        logger.error(f&#34;Ошибка при получении данных get_random_others_word: {e}&#34;)
-        return []</code></pre>
-</details>
-<div class="desc"><p>Получить случайные слова пользователя, исключая указанное русское слово</p>
-<p>Args:
-user_id (int): ID пользователя
-rus_word (str): Русское слово
-count (int): Количество случайных слов </p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>list</code></dt>
-<dd>Список случайных английских слов</dd>
-</dl></div>
-</dd>
-<dt id="src.bot.queries.get_random_word_for_user"><code class="name flex">
-<span>def <span class="ident">get_random_word_for_user</span></span>(<span>user_id: int, previous_word: str) ‑> Dict[str, Any] | None</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_random_word_for_user(user_id: int, previous_word: str) -&gt; Optional[Dict[str, Any]]:
-    &#34;&#34;&#34;Получить случайное слово для пользователя
-    
-    Args:
-    user_id (int): ID пользователя
-    previous_word (str): Предыдущее русское слово
-    
-    Returns:
-        Optional[dict]: Словарь с данными слова если найдено, иначе None
-    &#34;&#34;&#34;
-    try:
-        with Session() as session:
-            stmt = (
-                select(Word, UserWord)
-                .join(UserWord, UserWord.id_word == Word.id)
-                .where(UserWord.id_user == user_id,
-                       Word.rus != previous_word,
-                       UserWord.learned == False))
-            
-            words = session.execute(stmt).all()
-            
-            # Берем любые слова, если все изучено
-            if not words:
-                logger.info(f&#34;Все слова изучены для пользователя {user_id}, берем любые слова&#34;)
-                stmt = (
-                    select(Word, UserWord)
-                    .join(UserWord, UserWord.id_word == Word.id)
-                    .where(UserWord.id_user == user_id,
-                        Word.rus != previous_word))
-                
-                words = session.execute(stmt).all()
-            
-            if not words:
-                logger.warning(f&#34;Нет доступных слов для пользователя {user_id}&#34;)
-                return None
-            
-            top_words = words[:min(10, len(words))]
-            random_word, user_word = random.choice(top_words)
-            
-            # user_word.attempt_word += 1
-            session.commit()
-        
-            return {&#34;rus&#34;: random_word.rus, &#34;eng&#34;: random_word.eng, &#34;userword_id&#34;: user_word.id}
-        
-    except exc.SQLAlchemyError as e:
-        logger.error(f&#34;Ошибка базы: {e}&#34;)
-        return None
-    except Exception as e:
-        logger.error(f&#34;Ошибка при получении данных get_random_word_for_user: {e}&#34;)
         return None</code></pre>
 </details>
-<div class="desc"><p>Получить случайное слово для пользователя</p>
-<p>Args:
-user_id (int): ID пользователя
-previous_word (str): Предыдущее русское слово</p>
+<div class="desc"><p>Получить рандомно определенное количество слов</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>user_id</code></strong> :&ensp;<code>int</code></dt>
+<dd>Id пользователя</dd>
+<dt><strong><code>previous_word</code></strong> :&ensp;<code>str</code></dt>
+<dd>Предыдущее слово для исключения</dd>
+<dt><strong><code>limit</code></strong> :&ensp;<code>int</code></dt>
+<dd>Количество слов для возврата</dd>
+</dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>Optional[dict]</code></dt>
-<dd>Словарь с данными слова если найдено, иначе None</dd>
+<dt><code>List[Dict]</code></dt>
+<dd>Список слов в виде словарей</dd>
 </dl></div>
 </dd>
 <dt id="src.bot.queries.get_user_words"><code class="name flex">
-<span>def <span class="ident">get_user_words</span></span>(<span>user_id: int) ‑> list[tuple[str, str]] | bool</span>
+<span>def <span class="ident">get_user_words</span></span>(<span>user_id: int) ‑> list[tuple[str, str]] | None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_user_words(user_id: int) -&gt; list[tuple[str, str]] | bool:
+<pre><code class="python">def get_user_words(user_id: int) -&gt; Optional[list[tuple[str, str]]]:
     &#34;&#34;&#34;Получает список слов пользователя в формате (русское, английское)
 
     Args:
         user_id (int): ID пользователя
 
     Returns:
-        llist[tuple[str, str]]: Список пар (русское слово, английское слово)
-        bool: False в случае ошибки
+        list[tuple[str, str]]: Список пар (русское слово, английское слово)
     &#34;&#34;&#34;
     try:
         with Session() as session:
-            user_words = session.execute(select(Word.rus, Word.eng)
-                                         .join(UserWord, UserWord.id_word == Word.id)
-                                         .where(UserWord.id_user == user_id)
-                                         ).all()
-            if user_words:
-                user_word_list = [(user_word.rus, user_word.eng) for user_word in user_words]
-                session.commit()
-                
-                return user_word_list
-            else:
-                logger.warning(f&#34;Список слов пуст для {user_id}&#34;)
-                return False
+            stmt = (select(Word).join(UserWord, isouter=True).where(or_(UserWord.id_user == user_id, UserWord.id_user.is_(None))))
+            words = session.scalars(stmt).all()
+            
+        return [(word.rus, word.eng) for word in words] if words else None
         
     except exc.SQLAlchemyError as e:
-        logger.error(f&#34;Ошибка базы: {e}&#34;)
-        return False
-    except Exception as e:
-        logger.error(f&#34;Ошибка при получении всех слов get_user_words: {e}&#34;)
-        return False</code></pre>
+        return None</code></pre>
 </details>
 <div class="desc"><p>Получает список слов пользователя в формате (русское, английское)</p>
 <h2 id="args">Args</h2>
@@ -438,62 +304,8 @@ previous_word (str): Предыдущее русское слово</p>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>llist[tuple[str, str]]</code></dt>
+<dt><code>list[tuple[str, str]]</code></dt>
 <dd>Список пар (русское слово, английское слово)</dd>
-<dt><code>bool</code></dt>
-<dd>False в случае ошибки</dd>
-</dl></div>
-</dd>
-<dt id="src.bot.queries.update_word_learned"><code class="name flex">
-<span>def <span class="ident">update_word_learned</span></span>(<span>userword_id: int, learned: bool) ‑> bool</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def update_word_learned(userword_id: int, learned: bool) -&gt; bool:
-    &#34;&#34;&#34;Обновляет статус изучения слова пользователя
-
-    Args:
-        userword_id (int): D связи пользователь-слово для обновления
-        learned (bool): Новый статус изучения слова 
-
-    Returns:
-        bool: True при успешном обновлении, False при ошибке
-    &#34;&#34;&#34;
-    try:
-        with Session() as session:
-            
-            user_word = session.query(UserWord).get(userword_id)
-            if not user_word:
-                logger.warning(f&#34;Запись UserWord с id {userword_id} не найдена&#34;)
-                return False
-                
-            user_word.learned = learned
-            session.commit()
-        
-        return True
-    
-    except exc.SQLAlchemyError as e:
-        logger.error(f&#34;Ошибка базы: {e}&#34;)
-        return False
-    except Exception as e:
-        logger.error(f&#34;Ошибка при обновлении статистики mark_attempt_result: {e}&#34;)
-        return False</code></pre>
-</details>
-<div class="desc"><p>Обновляет статус изучения слова пользователя</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>userword_id</code></strong> :&ensp;<code>int</code></dt>
-<dd>D связи пользователь-слово для обновления</dd>
-<dt><strong><code>learned</code></strong> :&ensp;<code>bool</code></dt>
-<dd>Новый статус изучения слова </dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>bool</code></dt>
-<dd>True при успешном обновлении, False при ошибке</dd>
 </dl></div>
 </dd>
 </dl>
@@ -516,10 +328,8 @@ previous_word (str): Предыдущее русское слово</p>
 <li><code><a title="src.bot.queries.add_user_word" href="#src.bot.queries.add_user_word">add_user_word</a></code></li>
 <li><code><a title="src.bot.queries.delete_user_word" href="#src.bot.queries.delete_user_word">delete_user_word</a></code></li>
 <li><code><a title="src.bot.queries.get_or_create_user" href="#src.bot.queries.get_or_create_user">get_or_create_user</a></code></li>
-<li><code><a title="src.bot.queries.get_random_others_word" href="#src.bot.queries.get_random_others_word">get_random_others_word</a></code></li>
-<li><code><a title="src.bot.queries.get_random_word_for_user" href="#src.bot.queries.get_random_word_for_user">get_random_word_for_user</a></code></li>
+<li><code><a title="src.bot.queries.get_random_words" href="#src.bot.queries.get_random_words">get_random_words</a></code></li>
 <li><code><a title="src.bot.queries.get_user_words" href="#src.bot.queries.get_user_words">get_user_words</a></code></li>
-<li><code><a title="src.bot.queries.update_word_learned" href="#src.bot.queries.update_word_learned">update_word_learned</a></code></li>
 </ul>
 </li>
 </ul>

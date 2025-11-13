@@ -55,26 +55,20 @@ el.replaceWith(d);
 <pre><code class="python">@bot.message_handler(func=lambda message: message.text == Command.ADD_WORD)
 def add_word(message):
     &#34;&#34;&#34;Обработчик команды добавления нового слова в коллекцию пользователя.&#34;&#34;&#34;
-    try:
-        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-            user_id = data.get(&#39;user_id&#39;, False)
-        
-        if not user_id:
-            logger.warning(f&#34;Пользователь не добавлен&#34;)
-            bot.send_message(message.chat.id, &#34;Пропишите /start для начала работы:&#34;, reply_markup=types.ReplyKeyboardRemove())
-            return
-        
-        # Добавляем кнопку отмена
-        markup = types.ReplyKeyboardMarkup(row_width=2)
-        markup.add(types.KeyboardButton(Command.CANCEL))
-        
-        bot.send_message(message.chat.id, &#34;Напишите какое слово хотите добавить:&#34;, reply_markup=markup)
-        # Ждем слова на русском
-        bot.set_state(message.from_user.id, MyStates.wait_word, message.chat.id)
-        
-    except Exception as e:
-        logger.error(f&#34;Ошибка при add_word: {e}&#34;)
-        bot.send_message(message.chat.id, &#34;Произошла ошибка при добавлении слова&#34;)</code></pre>
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        user_id = data.get(&#39;user_id&#39;, False)
+    
+    if not user_id:
+        bot.send_message(message.chat.id, &#34;Пропишите /start для начала работы&#34;, reply_markup=types.ReplyKeyboardRemove())
+        return
+    
+    # Добавляем кнопку отмена
+    markup = types.ReplyKeyboardMarkup(row_width=2)
+    markup.add(types.KeyboardButton(Command.CANCEL))
+    
+    bot.send_message(message.chat.id, &#34;Напишите какое слово хотите добавить:&#34;, reply_markup=markup)
+    # Ждем слова на русском
+    bot.set_state(message.from_user.id, MyStates.wait_word, message.chat.id)</code></pre>
 </details>
 <div class="desc"><p>Обработчик команды добавления нового слова в коллекцию пользователя.</p></div>
 </dd>
@@ -88,54 +82,40 @@ def add_word(message):
 </summary>
 <pre><code class="python">def create_cards(message, user_id, previous_word = &#34;&#34;):
     &#34;&#34;&#34;Выводим слово для конкретного клиента&#34;&#34;&#34;
-    try:
-        markup = types.ReplyKeyboardMarkup(row_width=2)
-        # Получаем случайное слово
-        word = get_random_word_for_user(user_id, previous_word)
-        # Устанавливаем состояние 
-        bot.set_state(message.from_user.id, MyStates.target_word, message.chat.id)
+    markup = types.ReplyKeyboardMarkup(row_width=2)
+    # Получаем случайное слово
+    words = get_random_words(user_id, previous_word)
 
-        if not word:
-            add_word_btn = types.KeyboardButton(Command.ADD_WORD)
-            markup.add(add_word_btn)
-            bot.send_message(message.chat.id, &#34;У вас нет больше слов. Добавьте слово&#34;, reply_markup=markup)
-            return False
-        
-        # Получаем случайные неправильные варианты
-        other_eng_words = get_random_others_word(user_id, word[&#39;rus&#39;], 3)
-        
-        if not other_eng_words:
-            add_word_btn = types.KeyboardButton(Command.ADD_WORD)
-            markup.add(add_word_btn)
-            bot.send_message(message.chat.id, &#34;У вас мало слов. Добавьте слово&#34;, reply_markup=markup)
-            return False
-        
-        # Формируем кнопки из вариантов ответа
-        answer_options = other_eng_words + [word[&#39;eng&#39;]]
-        answer_buttons = [types.KeyboardButton(str(word_text)) for word_text in answer_options]
-        random.shuffle(answer_buttons)
-        
-        # Формируем кнопки действий
+    if not words:
         add_word_btn = types.KeyboardButton(Command.ADD_WORD)
-        delete_btn = types.KeyboardButton(Command.DELETE_WORD)
-        next_btn = types.KeyboardButton(Command.NEXT)
-        answer_buttons.extend([next_btn, add_word_btn, delete_btn])
-        
-        # Сохраняем данные в состоянии для использования в обработчике
-        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-            data[&#39;buttons&#39;] = answer_buttons
-            data[&#39;user_id&#39;] = user_id
-            data[&#39;word&#39;] = word
-            data[&#39;word&#39;][&#39;attempts&#39;] = 1
-        
-        markup.add(*answer_buttons)
-        # markup.add(next_btn, add_word_btn, delete_btn)
-        
-        bot.send_message(message.chat.id, f&#34;Выбери перевод слова:\n🇷🇺 {word[&#39;rus&#39;]}&#34;, reply_markup=markup)
-        
-    except Exception as e:
-        logger.error(f&#34;Ошибка при выводе слов create_cards: {e}&#34;)
-        bot.send_message(message.chat.id, &#34;Произошла ошибка. Попробуйте позже.&#34;)</code></pre>
+        markup.add(add_word_btn)
+        bot.send_message(message.chat.id, &#34;Слова не найдены, попробуйте добавить слово&#34;, reply_markup=markup)
+        return False
+    
+    # Устанавливаем состояние
+    bot.set_state(message.from_user.id, MyStates.target_word, message.chat.id)
+    
+    # Формируем кнопки из вариантов ответа
+    current_word = random.choice(words)
+    answer_options = [word[&#39;eng&#39;] for word in words]    
+    answer_buttons = [types.KeyboardButton(str(word_text)) for word_text in answer_options]
+    random.shuffle(answer_buttons)
+    
+    # Формируем кнопки действий
+    add_word_btn = types.KeyboardButton(Command.ADD_WORD)
+    delete_btn = types.KeyboardButton(Command.DELETE_WORD)
+    next_btn = types.KeyboardButton(Command.NEXT)
+    answer_buttons.extend([next_btn, add_word_btn, delete_btn])
+    
+    # Сохраняем данные в состоянии для использования в обработчике
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data[&#39;buttons&#39;] = answer_buttons
+        data[&#39;user_id&#39;] = user_id
+        data[&#39;current_word&#39;] = current_word
+    
+    markup.add(*answer_buttons)
+    
+    bot.send_message(message.chat.id, f&#34;Выбери перевод слова:\n🇷🇺 {current_word[&#39;rus&#39;]}&#34;, reply_markup=markup)</code></pre>
 </details>
 <div class="desc"><p>Выводим слово для конкретного клиента</p></div>
 </dd>
@@ -150,34 +130,27 @@ def add_word(message):
 <pre><code class="python">@bot.message_handler(func=lambda message: message.text == Command.DELETE_WORD)
 def delete_word(message):
     &#34;&#34;&#34;Обработчик команды удаления слова из коллекции пользователя&#34;&#34;&#34;
-    try:
-        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-            user_id = data.get(&#39;user_id&#39;, False)
-            word = data.get(&#39;word&#39;, False)
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        user_id = data.get(&#39;user_id&#39;, False)
+        current_word = data.get(&#39;current_word&#39;, False)
+    
+    if not user_id:
+        bot.send_message(message.chat.id, &#34;Пропишите /start для начала работы:&#34;, reply_markup=types.ReplyKeyboardRemove())
+        return
+    
+    if not current_word:
+        bot.send_message(message.chat.id, &#34;Не удалось определить слово для удаления&#34;)
+        create_cards(message, user_id)
+        return
         
-        if not user_id:
-            logger.warning(f&#34;Пользователь не добавлен&#34;)
-            bot.send_message(message.chat.id, &#34;Пропишите /start для начала работы:&#34;, reply_markup=types.ReplyKeyboardRemove())
-            return
-        
-        if not word.get(&#39;rus&#39;):
-            logger.warning(f&#34;Ошибка при удалении слова. Не получилось взять слово из хранилища&#34;)
-            bot.send_message(message.chat.id, &#34;Не удалось определить слово для удаления&#34;)
-            create_cards(message, user_id)
-            return
-            
-        success = delete_user_word(user_id, word.get(&#39;rus&#39;))
-        if success:
-            response_text = f&#34;Слово \&#34;{word.get(&#39;rus&#39;, &#39;&#39;)}\&#34; удалено!&#34;
-        else:
-            response_text = f&#34;Ошибка при удалении слова \&#34;{word.get(&#39;rus&#39;, &#39;&#39;)}\&#34; &#34;
+    success = delete_user_word(user_id, current_word)
+    if success:
+        response_text = f&#34;Слово \&#34;{current_word.get(&#39;rus&#39;, &#39;&#39;)}\&#34; удалено!&#34;
+    else:
+        response_text = f&#34;Слово \&#34;{current_word.get(&#39;rus&#39;, &#39;&#39;)}\&#34; является базовым. Его нельзя удалить!&#34;
 
-        bot.send_message(message.chat.id, response_text)    
-        create_cards(message, user_id, word.get(&#39;rus&#39;))
-        
-    except Exception as e:
-        logger.error(f&#34;Ошибка при delete_word: {e}&#34;)
-        bot.send_message(message.chat.id, &#34;Произошла ошибка при удалении карточки&#34;)</code></pre>
+    bot.send_message(message.chat.id, response_text)
+    create_cards(message, user_id, current_word.get(&#39;rus&#39;))</code></pre>
 </details>
 <div class="desc"><p>Обработчик команды удаления слова из коллекции пользователя</p></div>
 </dd>
@@ -192,38 +165,33 @@ def delete_word(message):
 <pre><code class="python">@bot.message_handler(state=MyStates.wait_translate)
 def handle_wait_translate(message):
     &#34;&#34;&#34;Обработчик ввода перевода на английском&#34;&#34;&#34;
-    try:
-        word = message.text
-        
-        if len(word.split()) != 1:
-            bot.send_message(message.chat.id, f&#34;Укажите одно слово&#34;)
-            bot.set_state(message.from_user.id, MyStates.wait_translate, message.chat.id)
-            return
-    
-        if not re.match(r&#39;^[A-Za-z\-]+$&#39;, word):
-            bot.send_message(message.chat.id, f&#34;Укажите слово на английском&#34;)
-            bot.set_state(message.from_user.id, MyStates.wait_translate, message.chat.id)
-            return
-        
-        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-            new_rus_word = data.get(&#39;new_rus_word&#39;)
-            user_id = data.get(&#39;user_id&#39;)
+    word_translation = message.text 
+    if len(word_translation.split()) != 1:
+        bot.send_message(message.chat.id, f&#34;Укажите одно слово&#34;)
+        bot.set_state(message.from_user.id, MyStates.wait_translate, message.chat.id)
+        return
 
-        bot.delete_state(message.from_user.id, message.chat.id)
-        word = word.strip().replace(&#34; &#34;, &#34;&#34;)
-        word = word.capitalize() if word else &#34;&#34;
-        
-        user_word_success, user_word_message = add_user_word(user_id, new_rus_word, word)
-        bot.send_message(message.chat.id, f&#34;{user_word_message}&#34;)
-        if user_word_success:
-            user_words = get_user_words(user_id)
+    if not re.match(r&#39;^[A-Za-z\-]+$&#39;, word_translation):
+        bot.send_message(message.chat.id, f&#34;Укажите слово на английском&#34;)
+        bot.set_state(message.from_user.id, MyStates.wait_translate, message.chat.id)
+        return
+    
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        new_rus_word = data.get(&#39;new_rus_word&#39;)
+        user_id = data.get(&#39;user_id&#39;)
+
+    bot.delete_state(message.from_user.id, message.chat.id)
+    word_translation = word_translation.strip().replace(&#34; &#34;, &#34;&#34;)
+    word_translation = word_translation.capitalize() if word_translation else &#34;&#34;
+    
+    user_word_success, user_word_message = add_user_word(user_id, new_rus_word, word_translation)
+    bot.send_message(message.chat.id, user_word_message)
+    if user_word_success:
+        user_words = get_user_words(user_id)
+        if user_words:
             count_words_text = f&#34;Сейчас вы изучаете {len(user_words)} слов&#34;
             bot.send_message(message.chat.id, count_words_text)
-        create_cards(message, data[&#39;user_id&#39;], data[&#39;word&#39;][&#39;rus&#39;])
-        
-    except Exception as e:
-        logger.error(f&#34;Ошибка при add_word: {e}&#34;)
-        bot.send_message(message.chat.id, &#34;Произошла ошибка при добавлении слова&#34;)</code></pre>
+    create_cards(message, user_id, new_rus_word)</code></pre>
 </details>
 <div class="desc"><p>Обработчик ввода перевода на английском</p></div>
 </dd>
@@ -238,31 +206,25 @@ def handle_wait_translate(message):
 <pre><code class="python">@bot.message_handler(state=MyStates.wait_word)
 def handle_wait_word(message):
     &#34;&#34;&#34;Обработчик ввода слова на русском&#34;&#34;&#34;
-    try:
-        word = message.text.strip()
-        
-        if len(word.split()) != 1:
-            bot.send_message(message.chat.id, f&#34;Укажите одно слово&#34;)
-            bot.set_state(message.from_user.id, MyStates.wait_word, message.chat.id)
-            return
+    word = message.text.strip() 
+    if len(word.split()) != 1:
+        bot.send_message(message.chat.id, f&#34;Укажите одно слово&#34;)
+        bot.set_state(message.from_user.id, MyStates.wait_word, message.chat.id)
+        return
+
+    if not re.match(r&#39;^[а-яА-ЯёЁ\-]+$&#39;, word):
+        bot.send_message(message.chat.id, f&#34;Укажите слово на русском&#34;)
+        bot.set_state(message.from_user.id, MyStates.wait_word, message.chat.id)
+        return
+
+    word = word.strip().replace(&#34; &#34;, &#34;&#34;)
+    word = word.capitalize() if word else &#34;&#34;
     
-        if not re.match(r&#39;^[а-яА-ЯёЁ\-]+$&#39;, word):
-            bot.send_message(message.chat.id, f&#34;Укажите слово на русском&#34;)
-            bot.set_state(message.from_user.id, MyStates.wait_word, message.chat.id)
-            return
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data[&#39;new_rus_word&#39;] = word
 
-        word = word.strip().replace(&#34; &#34;, &#34;&#34;)
-        word = word.capitalize() if word else &#34;&#34;
-        
-        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-            data[&#39;new_rus_word&#39;] = word
-
-        bot.send_message(message.chat.id, f&#34;Укажите перевод слова {word}&#34;)
-        bot.set_state(message.from_user.id, MyStates.wait_translate, message.chat.id)
-            
-    except Exception as e:
-        logger.error(f&#34;Ошибка при handle_wait_word: {e}&#34;)
-        bot.send_message(message.chat.id, &#34;Произошла ошибка при обработке русского слова&#34;)</code></pre>
+    bot.send_message(message.chat.id, f&#34;Укажите перевод слова {word}&#34;)
+    bot.set_state(message.from_user.id, MyStates.wait_translate, message.chat.id)</code></pre>
 </details>
 <div class="desc"><p>Обработчик ввода слова на русском</p></div>
 </dd>
@@ -275,64 +237,48 @@ def handle_wait_word(message):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@bot.message_handler(func=lambda message: True)
-def message_reply(message):
+def message_reply(message):    
     &#34;&#34;&#34;Обработчик основного взаимодействия с пользователем&#34;&#34;&#34;
-    try:
-        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:  
-            user_id = data.get(&#39;user_id&#39;, False)
-            word = data.get(&#39;word&#39;, [])
-            buttons = data.get(&#39;buttons&#39;, [])
-            
-        if not user_id:
-            bot.send_message(message.chat.id, &#34;Для начала работы бота напишите /start&#34;, reply_markup=types.ReplyKeyboardRemove())
-            return 
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:  
+        user_id = data.get(&#39;user_id&#39;, False)
+        current_word = data.get(&#39;current_word&#39;, [])
+        buttons = data.get(&#39;buttons&#39;, [])
         
-        if not word:
-            bot.send_message(message.chat.id, &#34;Сессия завершена. Начните заново /start&#34;)
-            bot.delete_state(message.from_user.id, message.chat.id)
-            return
-        
-        word_attempts = int(word[&#39;attempts&#39;])
-        logger.info(f&#34;Слово {word[&#39;userword_id&#39;]}:{word[&#39;rus&#39;]}, попытка номер {word_attempts}&#34;)
-        text = message.text.replace(&#39;❌&#39;, &#39;&#39;).strip()
-        if text.lower() == word[&#39;eng&#39;].lower():
-            hint = f&#34;Верный ответ!\n {word[&#39;rus&#39;]} -&gt; {word[&#39;eng&#39;]}&#34;
-            bot.send_message(message.chat.id, hint, reply_markup=types.ReplyKeyboardRemove())
-            bot.delete_state(message.from_user.id, message.chat.id)
-            
-            # Если угадывает со 2 попытки, то слово изучено 
-            if word_attempts &lt;= 2:
-                update_word_learned(word.get(&#39;userword_id&#39;), True)
-            
-            create_cards(message, user_id, word[&#39;rus&#39;])
-        else:
-            updated_buttons = []
-            word_attempts += 1
-            for btn in buttons:
-                btn_text = btn.text
-                clean_text = btn_text
-                if btn_text.lower() == text.lower():
-                    updated_buttons.append(types.KeyboardButton(clean_text + &#39; ❌&#39;))
-                else:
-                    updated_buttons.append(types.KeyboardButton(clean_text))
-                
-                # Если угадывает со 2 попытки, то слово не изучено 
-                if word_attempts &gt;= 2:
-                    update_word_learned(word.get(&#39;userword_id&#39;), False)
-                
-            with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-                data[&#39;buttons&#39;] = updated_buttons
-                data[&#39;word&#39;][&#39;attempts&#39;] = word_attempts
-                
-            markup = types.ReplyKeyboardMarkup(row_width=2)
-            markup.add(*updated_buttons)
+    if not user_id:
+        bot.send_message(message.chat.id, &#34;Для начала работы бота напишите /start&#34;, reply_markup=types.ReplyKeyboardRemove())
+        return 
+    
+    if not current_word:
+        bot.send_message(message.chat.id, &#34;Сессия завершена. Начните заново /start&#34;)
+        bot.delete_state(message.from_user.id, message.chat.id)
+        return
+    
+    text = message.text.replace(&#39;❌&#39;, &#39;&#39;).strip()
+    
+    if text.lower() == current_word[&#39;eng&#39;].lower():
+        hint = f&#34;Верный ответ!\n {current_word[&#39;rus&#39;]} -&gt; {current_word[&#39;eng&#39;]}&#34;
+        bot.send_message(message.chat.id, hint, reply_markup=types.ReplyKeyboardRemove())
+        bot.delete_state(message.from_user.id, message.chat.id)    
 
-            hint = f&#34;Допущена ошибка!\n Попробуй ещё раз вспомнить слово 🇷🇺{word[&#39;rus&#39;]}&#34;
-            bot.send_message(message.chat.id, hint, reply_markup=markup)
+        create_cards(message, user_id, current_word[&#39;rus&#39;])
+    else:
+        updated_buttons = []
+        for btn in buttons:
+            btn_text = btn.text
+            clean_text = btn_text
+            if btn_text.lower() == text.lower():
+                updated_buttons.append(types.KeyboardButton(clean_text + &#39; ❌&#39;))
+            else:
+                updated_buttons.append(types.KeyboardButton(clean_text))
             
-    except Exception as e:
-        logger.error(f&#34;Ошибка в message_reply для пользователя {message.from_user.id}: {e}&#34;)
-        bot.send_message(message.chat.id, &#34;Произошла ошибка. Попробуйте снова /start&#34;)</code></pre>
+        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+            data[&#39;buttons&#39;] = updated_buttons
+            
+        markup = types.ReplyKeyboardMarkup(row_width=2)
+        markup.add(*updated_buttons)
+
+        hint = f&#34;Допущена ошибка!\n Попробуй ещё раз вспомнить слово 🇷🇺{current_word[&#39;rus&#39;]}&#34;
+        bot.send_message(message.chat.id, hint, reply_markup=markup)</code></pre>
 </details>
 <div class="desc"><p>Обработчик основного взаимодействия с пользователем</p></div>
 </dd>
@@ -347,25 +293,23 @@ def message_reply(message):
 <pre><code class="python">@bot.message_handler(func=lambda message: message.text == Command.NEXT)
 @bot.message_handler(func=lambda message: message.text == Command.CANCEL)
 def next_cards(message):
-    &#34;&#34;&#34;Обработчик команд &#34;Далее&#34; или &#34;Отмена&#34; &#34;&#34;&#34;
-    try:
-        # Получаем данные пользователя из временного хранилища
-        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-            user_id = data.get(&#39;user_id&#39;, False)
-            previous_word = data.get(&#39;word&#39;, &#39;&#39;)
-        
-        if not user_id:
-            logger.warning(f&#34;Пользователь не добавлен&#34;)
-            bot.send_message(message.chat.id, &#34;Пропишите /start для начала работы:&#34;, reply_markup=types.ReplyKeyboardRemove())
-            return
-        
-        create_cards(message, user_id, previous_word.get(&#39;rus&#39;, &#39;&#39;))
-        
-    except Exception as e:
-        logger.error(f&#34;Ошибка при next_cards: {e}&#34;)
-        bot.send_message(message.chat.id, &#34;Произошла ошибка при загрузке карточек&#34;)</code></pre>
+    &#34;&#34;&#34;Обработчик команд &#34;Далее&#34; и &#34;Отмена&#34; &#34;&#34;&#34;
+    # Получаем данные пользователя из временного хранилища
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        user_id = data.get(&#39;user_id&#39;, False)
+        previous_word = data.get(&#39;current_word&#39;, False)
+    
+    if not user_id:
+        bot.send_message(message.chat.id, &#34;Пропишите /start для начала работы&#34;, reply_markup=types.ReplyKeyboardRemove())
+        return
+    
+    if not previous_word:
+        bot.send_message(message.chat.id, &#34;Что то пошло не так! Пропишите /start для начала работы&#34;, reply_markup=types.ReplyKeyboardRemove())
+        return
+    
+    create_cards(message, user_id, previous_word[&#39;rus&#39;])</code></pre>
 </details>
-<div class="desc"><p>Обработчик команд "Далее" или "Отмена"</p></div>
+<div class="desc"><p>Обработчик команд "Далее" и "Отмена"</p></div>
 </dd>
 <dt id="src.bot.handlers.start"><code class="name flex">
 <span>def <span class="ident">start</span></span>(<span>message)</span>
@@ -378,31 +322,25 @@ def next_cards(message):
 <pre><code class="python">@bot.message_handler(commands=[&#39;cards&#39;, &#39;start&#39;])
 def start(message):
     &#34;&#34;&#34;Обработчик команд /start и /cards для начала работы с ботом.&#34;&#34;&#34;
-    try:
-        # Создаем нового пользователя или находит существующего
-        user_id, user_was_exist = get_or_create_user(message.from_user.id, message.from_user.username)
+    # Создаем нового пользователя или находит существующего
+    user_id, user_was_exist = get_or_create_user(message.from_user.id, message.from_user.username)
 
-        if user_id is None:
-            logger.error(f&#34;Пользователь не добавлен&#34;)
-            bot.send_message(message.chat.id, &#34;Произошла ошибка, попробуйте позже&#34;)
-            return
+    if user_id is None:
+        bot.send_message(message.chat.id, &#34;Произошла ошибка, попробуйте позже&#34;)
+        return
 
-        if user_was_exist:
-            text = f&#34;С возвращением, {message.from_user.first_name}&#34;
-        else:
-            text = textwrap.dedent(
-                &#34;Привет 👋 Давай попрактикуемся в английском языке. Тренировки можешь проходить в удобном для себя темпе.\n&#34;
-                &#34;У тебя есть возможность использовать тренажёр, как конструктор, и собирать свою собственную базу для обучения. Для этого воспользуйся инструментами:\n&#34;
-                &#34;   добавить слово ➕,\n&#34;
-                &#34;   удалить слово 🔙.\n&#34;
-                &#34;Ну что, начнём ⬇️&#34;)
-        
-        bot.send_message(message.chat.id, text)
-        create_cards(message, user_id)
-          
-    except Exception as e:
-        logger.error(f&#34;Ошибка в команде /start: {e}&#34;)
-        bot.send_message(message.chat.id, &#34;Произошла ошибка. Попробуйте позже.&#34;)</code></pre>
+    if user_was_exist:
+        text = f&#34;С возвращением, {message.from_user.first_name}&#34;
+    else:
+        text = textwrap.dedent(
+            &#34;Привет 👋 Давай попрактикуемся в английском языке. Тренировки можешь проходить в удобном для себя темпе.\n&#34;
+            &#34;У тебя есть возможность использовать тренажёр, как конструктор, и собирать свою собственную базу для обучения. Для этого воспользуйся инструментами:\n&#34;
+            &#34;   добавить слово ➕,\n&#34;
+            &#34;   удалить слово 🔙.\n&#34;
+            &#34;Ну что, начнём ⬇️&#34;)
+    
+    bot.send_message(message.chat.id, text)
+    create_cards(message, user_id)</code></pre>
 </details>
 <div class="desc"><p>Обработчик команд /start и /cards для начала работы с ботом.</p></div>
 </dd>

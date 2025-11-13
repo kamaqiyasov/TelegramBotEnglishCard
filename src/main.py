@@ -1,18 +1,9 @@
-import logging
-from src.database.base import create_tables, drop_tables, add_sample_data
+from src.database.base import create_tables
 from src.bot.core import bot
 from src.bot import handlers
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
 def main():
-    logger.info("Запуск программы")
-
-    create_tables() # Запустить один раз
+    create_tables()
     bot.infinity_polling(skip_pending=True)
     
 if __name__ == "__main__":
